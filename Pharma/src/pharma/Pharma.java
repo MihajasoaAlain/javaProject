@@ -22,9 +22,11 @@ public class Pharma {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-     MedicamentController medicamentController = new MedicamentController();
+    /* MedicamentController medicamentController = new MedicamentController();
 AchatController achatController = new AchatController();
-achatController.ajouterAchat("A145", "M126", "Grand", 1000, Date.valueOf("2023-12-25"));
+achatController.ajouterAchat("A145", "M126", "Grand", 1000, Date.valueOf("2023-12-25"));*/
+    Histogramme histo = new Histogramme();
+    histo.createHistogram();
     }
 
 }
