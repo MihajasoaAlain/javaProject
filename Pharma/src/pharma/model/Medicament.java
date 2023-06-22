@@ -14,6 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Date;
 
 /**
  *
@@ -162,32 +163,50 @@ public class Medicament {
             config.closeDb();
         }
     }
-    
-public void recette() {
-    Config config = new Config();
-    try (Connection connection = config.getConnection();
-         Statement statement = connection.createStatement();
-         ResultSet resultSet = statement.executeQuery("SELECT medicament.design, SUM(achat.nbr) AS total_nbr " +
-                                                     "FROM medicament INNER JOIN achat " +
-                                                     "ON medicament.nummedoc = achat.nummedoc " +
-                                                     "GROUP BY medicament.design " +
-                                                     "ORDER BY total_nbr DESC LIMIT 5;")) {
-        System.out.println("TOP 5 DES MEDICAMENTS LES PLUS VENDUS");
-        // Process the ResultSet
-        while (resultSet.next()) {
-            // Lire les colonnes et afficher les données
-            String design = resultSet.getString("design");
-            int nombre = resultSet.getInt("total_nbr");
-            System.out.println("Design du médicament : " + design);
-            System.out.println("Nombre vendu : " + nombre);
-            System.out.println("---------------------");
+
+    public void recettePlusVendu() {
+        Config config = new Config();
+        try (Connection connection = config.getConnection(); Statement statement = connection.createStatement(); ResultSet resultSet = statement.executeQuery("SELECT medicament.design, SUM(achat.nbr) AS total_nbr "
+                + "FROM medicament INNER JOIN achat "
+                + "ON medicament.nummedoc = achat.nummedoc "
+                + "GROUP BY medicament.design "
+                + "ORDER BY total_nbr DESC LIMIT 5;")) {
+            System.out.println("TOP 5 DES MEDICAMENTS LES PLUS VENDUS");
+            // Process the ResultSet
+            while (resultSet.next()) {
+                // Lire les colonnes et afficher les données
+                String design = resultSet.getString("design");
+                int nombre = resultSet.getInt("total_nbr");
+                System.out.println("Design du médicament : " + design);
+                System.out.println("Nombre vendu : " + nombre);
+                System.out.println("---------------------");
+            }
+            config.closeDb();
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de l'affichage des médicaments : " + e.getMessage());
+            config.closeDb();
         }
-        config.closeDb();
-    } catch (SQLException e) {
-        System.out.println("Erreur lors de l'affichage des médicaments : " + e.getMessage());
-        config.closeDb();
     }
-}
 
+    public void recetteTotal() {
+        Config config = new Config();
+        try (Connection connection = config.getConnection(); Statement statement = connection.createStatement(); ResultSet resultSet = statement.executeQuery("select sum (achat.nbr*medicament.prix_unitaire) as recette_total from achat,medicament  where medicament.nummedoc= achat.nummedoc;")) {
+            System.out.println("TOTAL DE LA RECETTE");
+            // Process the ResultSet
+            int total;
+            while (resultSet.next()) {
+                // Lire les colonnes et afficher les données
+                total = resultSet.getInt("recette_total");
+                System.out.println("La recette total de la pharmacie est " + total);
+            }
+            config.closeDb();
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de l'affichage des médicaments : " + e.getMessage());
+            config.closeDb();
+        }
+    }
 
+    public void recetteMois() {
+        
+    }
 }
