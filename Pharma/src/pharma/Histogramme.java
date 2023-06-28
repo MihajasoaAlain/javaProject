@@ -21,11 +21,9 @@ public class Histogramme {
         System.out.println(currentMonth);
         
         String [] moisLettre = {"Janvier","fevrier","Mars","avril","Mai","Juin","juillet","Aout","Septembre","Octobre","Novenbre","Decembre"};
-        for (int i = 0; i < ventesParMois.length; i++) {
-                    
+        for (int i = 0; i < ventesParMois.length; i++) {     
             dataset.setValue(ventesParMois[i], "Ventes", "Mois " + moisLettre[i + 1]);
         }
-
         JFreeChart chart = ChartFactory.createBarChart(
             "Histogramme des ventes par mois", // Titre du graphique
             "Mois", // Étiquette de l'axe des x

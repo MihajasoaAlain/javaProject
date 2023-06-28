@@ -15,6 +15,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -207,6 +210,76 @@ public class Medicament {
     }
 
     public void recetteMois() {
-        
+
+        Calendar calendrier = Calendar.getInstance();
+        int mois = calendrier.get(Calendar.MONTH);
+        mois += 1;
+        System.out.println("le mois actuel est : " + mois);
+
+        try (Connection connection = config.getConnection(); Statement statement = connection.createStatement(); ResultSet resultSet = statement.executeQuery("SELECT SUM(achat.nbr*medicament.prix_unitaire) AS recette_total FROM achat,medicament  WHERE medicament.nummedoc= achat.nummedoc AND dateAchat LIKE %-" + mois + "-%;")) {
+            System.out.println("TOTAL DE LA RECETTE");
+            // Process the ResultSet
+            int total;
+            while (resultSet.next()) {
+                // Lire les colonnes et afficher les données
+                total = resultSet.getInt("recette_total");
+                System.out.println("La recette total de la pharmacie est " + total);
+            }
+            config.closeDb();
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de l'affichage des médicaments : " + e.getMessage());
+            config.closeDb();
+        }
+    }
+
+    public Map<String, Double> getRevenueHistogram() {
+        Config config = new Config();
+        Map<String, Double> revenueHistogram = new HashMap<>();
+
+        try (Connection connection = config.getConnection(); Statement statement = connection.createStatement()) {
+
+            // Calculate the start and end dates for the last 5 months
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.MONTH, -5);
+            Date startDate = new Date(calendar.getTimeInMillis());
+            Date endDate = new Date(System.currentTimeMillis());
+
+            // Prepare the SQL query to fetch the revenue for each month
+            String query = "SELECT YEAR(dateAchat) AS year, MONTH(dateAchat) AS month, SUM(nbr) AS revenue "
+                    + "FROM achat "
+                    + "WHERE dateAchat BETWEEN ? AND ? "
+                    + "GROUP BY YEAR(dateAchat), MONTH(dateAchat)";
+
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setDate(1, (java.sql.Date) startDate);
+            preparedStatement.setDate(2, (java.sql.Date) endDate);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            // Process the ResultSet
+            while (resultSet.next()) {
+                int year = resultSet.getInt("year");
+                int month = resultSet.getInt("month");
+                double revenue = resultSet.getDouble("revenue");
+
+                String monthLabel = getMonthLabel(month) + " " + year;
+                revenueHistogram.put(monthLabel, revenue);
+            }
+
+            config.closeDb();
+        } catch (SQLException e) {
+            // Handle the exception...
+        }
+
+        return revenueHistogram;
+    }
+
+    private String getMonthLabel(int month) {
+        String[] monthLabels = {
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        };
+
+        return monthLabels[month - 1];
     }
 }
